@@ -1,0 +1,38 @@
+name: coffee_telkom_app
+description: Coffee Telkom Mobile App
+
+publish_to: "none"
+
+version: 1.0.0+1
+
+environment:
+  sdk: ">=2.19.0 <3.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  google_sign_in: ^6.2.1
+  cupertino_icons: ^1.0.2
+  carousel_slider: ^5.0.0
+  http: ^0.13.6
+  shared_preferences: ^2.2.2
+  image_picker: ^1.0.4
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^2.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/iced-latte.jpg
+    - assets/images/latte.jpg
+    - assets/images/cappucino.jpeg
+    - assets/images/espresso.jpg
+    - assets/images/coldbrew.jpeg
+    - assets/images/matcha-latte.jpg
+    - assets/images/coffee_background.jpg
+    - assets/images/Logo-Telu-Coffee-new.png
+    - assets/images/QR.jpeg
