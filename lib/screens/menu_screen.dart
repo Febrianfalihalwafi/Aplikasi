@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:async';
 import 'cart_screen.dart';
 import 'about_screen.dart';
 import 'contact_screen.dart';
@@ -19,12 +20,38 @@ class MenuScreen extends StatefulWidget {
 class _MenuScreenState extends State<MenuScreen>
     with SingleTickerProviderStateMixin {
   String _selectedCategory = 'All';
-  late int _cartItemCount = 0;
   List<Map<String, dynamic>> _cartItems = [];
-  int _selectedIndex = 0; // ✅ Default 0 = Menu
+
+  int get _cartItemCount => _cartItems.fold(
+        0,
+        (sum, item) => sum + (item['quantity'] as int? ?? 0),
+      );
+
+  int _selectedIndex = 0;
   String _searchQuery = '';
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
+
+  late PageController _pageController;
+  Timer? _bannerTimer;
+
+  final List<Map<String, dynamic>> _motivationalQuotes = [
+    {
+      'icon': Icons.wb_sunny_rounded,
+      'title': 'Good Morning!',
+      'subtitle': 'Start your day with perfect coffee',
+    },
+    {
+      'icon': Icons.bolt_rounded,
+      'title': 'Stay Focused!',
+      'subtitle': 'Fuel your productivity with us',
+    },
+    {
+      'icon': Icons.self_improvement_rounded,
+      'title': 'Relax & Enjoy',
+      'subtitle': 'Take a break with our signature brew',
+    },
+  ];
 
   final List<Map<String, dynamic>> _menuItems = [
     {
@@ -34,8 +61,6 @@ class _MenuScreenState extends State<MenuScreen>
       'category': 'Cold',
       'image': 'assets/images/iced-latte.jpg',
       'description': 'Smooth espresso with cold milk and a hint of vanilla.',
-      'rating': 4.8,
-      'reviews': 124,
       'sizes': ['S', 'M', 'L'],
       'hasSugar': true,
       'temperatures': ['Cold'],
@@ -47,8 +72,6 @@ class _MenuScreenState extends State<MenuScreen>
       'category': 'Hot',
       'image': 'assets/images/cappucino.jpeg',
       'description': 'Rich espresso with steamed milk foam and cocoa dust.',
-      'rating': 4.9,
-      'reviews': 256,
       'sizes': ['S', 'M', 'L'],
       'hasSugar': false,
       'temperatures': ['Hot', 'Extra Hot'],
@@ -56,12 +79,10 @@ class _MenuScreenState extends State<MenuScreen>
     {
       'id': 3,
       'name': 'MATCHA LATTE',
-       'prices': {'S': 28000, 'M': 33000, 'L': 38000},
+      'prices': {'S': 28000, 'M': 33000, 'L': 38000},
       'category': 'Non-Coffee',
       'image': 'assets/images/matcha-latte.jpg',
       'description': 'Premium Japanese matcha whisked to perfection.',
-      'rating': 4.7,
-      'reviews': 89,
       'sizes': ['S', 'M', 'L'],
       'hasSugar': true,
       'temperatures': ['Hot', 'Cold'],
@@ -69,12 +90,10 @@ class _MenuScreenState extends State<MenuScreen>
     {
       'id': 4,
       'name': 'COLD BREW',
-       'prices': {'M': 33000, 'L': 38000},
+      'prices': {'M': 33000, 'L': 38000},
       'category': 'Cold',
       'image': 'assets/images/coldbrew.jpeg',
       'description': 'Slow-steeped for 12 hours for smooth, bold flavor.',
-      'rating': 4.9,
-      'reviews': 312,
       'sizes': ['M', 'L'],
       'hasSugar': true,
       'temperatures': ['Cold'],
@@ -86,8 +105,6 @@ class _MenuScreenState extends State<MenuScreen>
       'category': 'Hot',
       'image': 'assets/images/latte.jpg',
       'description': 'Classic espresso with silky steamed milk.',
-      'rating': 4.6,
-      'reviews': 198,
       'sizes': ['S', 'M', 'L'],
       'hasSugar': false,
       'temperatures': ['Hot'],
@@ -95,12 +112,10 @@ class _MenuScreenState extends State<MenuScreen>
     {
       'id': 6,
       'name': 'ESPRESSO',
-       'prices': {'S': 25000},
+      'prices': {'S': 25000},
       'category': 'Hot',
       'image': 'assets/images/espresso.jpg',
       'description': 'Pure bold espresso shot, the heart of every coffee.',
-      'rating': 4.8,
-      'reviews': 445,
       'sizes': ['S'],
       'hasSugar': false,
       'temperatures': ['Hot'],
@@ -109,10 +124,17 @@ class _MenuScreenState extends State<MenuScreen>
 
   int _getPriceForSize(Map<String, dynamic> item, String size) {
     final prices = item['prices'] as Map<String, dynamic>? ?? {};
-    return (prices[size] ?? prices.values.first ?? 0) as int;
+    if (prices.containsKey(size)) {
+      final price = prices[size];
+      return price is int ? price : 0;
+    }
+    if (prices.isNotEmpty) {
+      final firstPrice = prices.values.first;
+      return firstPrice is int ? firstPrice : 0;
+    }
+    return 0;
   }
 
-  
   List<Map<String, dynamic>> get _filteredItems {
     var items = _menuItems;
 
@@ -139,6 +161,14 @@ class _MenuScreenState extends State<MenuScreen>
     super.initState();
     _selectedIndex = widget.initialIndex;
 
+    _pageController = PageController(initialPage: 1000);
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _startAutoSwipe();
+      }
+    });
+
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 300),
       vsync: this,
@@ -148,12 +178,30 @@ class _MenuScreenState extends State<MenuScreen>
       curve: Curves.easeInOut,
     );
     _animationController.forward();
+  }
 
-    
+  void _startAutoSwipe() {
+    _bannerTimer?.cancel();
+
+    _bannerTimer = Timer.periodic(const Duration(seconds: 3), (timer) {
+      if (!mounted) {
+        timer.cancel();
+        return;
+      }
+
+      if (!_pageController.hasClients) return;
+
+      _pageController.nextPage(
+        duration: const Duration(milliseconds: 500),
+        curve: Curves.easeInOut,
+      );
+    });
   }
 
   @override
   void dispose() {
+    _bannerTimer?.cancel();
+    _pageController.dispose();
     _animationController.dispose();
     super.dispose();
   }
@@ -197,8 +245,6 @@ class _MenuScreenState extends State<MenuScreen>
           'selectedTemp': temperature,
         });
       }
-
-      _cartItemCount++;
     });
 
     _showAddToCartNotification('${item['name']} ($size)');
@@ -263,12 +309,137 @@ class _MenuScreenState extends State<MenuScreen>
                                   fontSize: 17,
                                   fontWeight: FontWeight.w700,
                                   color: Color(0xFF3E2723))),
-                          const SizedBox(height: 4),
-                          Text('Rp${_formatPrice(_getPriceForSize(item, selectedSize))}',
-                              style: const TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  color: Color(0xFF6B5B4F))),
+                          const SizedBox(height: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 14, vertical: 10),
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  const Color(0xFF6B5B4F).withOpacity(0.08),
+                                  const Color(0xFF8D7B68).withOpacity(0.03),
+                                ],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              borderRadius: BorderRadius.circular(14),
+                              border: Border.all(
+                                  color: const Color(0xFF6B5B4F)
+                                      .withOpacity(0.15)),
+                              boxShadow: [
+                                BoxShadow(
+                                  color:
+                                      const Color(0xFF6B5B4F).withOpacity(0.05),
+                                  blurRadius: 12,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(6),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF6B5B4F)
+                                        .withOpacity(0.15),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: const Icon(
+                                    Icons.local_offer_outlined,
+                                    size: 16,
+                                    color: Color(0xFF6B5B4F),
+                                  ),
+                                ),
+                                const SizedBox(width: 10),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      'Starting from',
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        color: const Color(0xFF6B5B4F)
+                                            .withOpacity(0.7),
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                    Text(
+                                      'Rp${_formatPrice(_getPriceForSize(item, selectedSize))}',
+                                      style: const TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w800,
+                                        color: Color(0xFF3E2723),
+                                        letterSpacing: 0.5,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(width: 12),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 10, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    gradient: const LinearGradient(
+                                      colors: [
+                                        Color(0xFF6B5B4F),
+                                        Color(0xFF8D7B68)
+                                      ],
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                    ),
+                                    borderRadius: BorderRadius.circular(8),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: const Color(0xFF6B5B4F)
+                                            .withOpacity(0.3),
+                                        blurRadius: 6,
+                                        offset: const Offset(0, 2),
+                                      ),
+                                    ],
+                                  ),
+                                  child: Text(
+                                    selectedSize,
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          if (availableSizes.length > 1) ...[
+                            const SizedBox(height: 10),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 6),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFF5F0E8),
+                                borderRadius: BorderRadius.circular(10),
+                                border:
+                                    Border.all(color: const Color(0xFFE0D6C9)),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(Icons.tune_rounded,
+                                      size: 14, color: Color(0xFF6B5B4F)),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    'Range: Rp${_formatPrice(_getPriceForSize(item, availableSizes.first))} - Rp${_formatPrice(_getPriceForSize(item, availableSizes.last))}',
+                                    style: const TextStyle(
+                                      fontSize: 11,
+                                      color: Color(0xFF6B5B4F),
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
                         ],
                       ),
                     ),
@@ -379,8 +550,8 @@ class _MenuScreenState extends State<MenuScreen>
                         Wrap(
                           spacing: 8,
                           runSpacing: 8,
-                          children: ['0%', '25%', '50%', '75%', '100%']
-                              .map((sugar) {
+                          children:
+                              ['0%', '25%', '50%', '75%', '100%'].map((sugar) {
                             final isSelected = selectedSugar == sugar;
                             return GestureDetector(
                               onTap: () =>
@@ -445,9 +616,27 @@ class _MenuScreenState extends State<MenuScreen>
                       children: [
                         const Icon(Icons.add_shopping_cart_rounded, size: 20),
                         const SizedBox(width: 8),
-                        Text('ADD TO CART • Rp${_formatPrice(_getPriceForSize(item, selectedSize))}',
-                            style: const TextStyle(
-                                fontSize: 14, fontWeight: FontWeight.w700)),
+                        Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            const Text(
+                              'ADD TO CART',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                            Text(
+                              'Rp${_formatPrice(_getPriceForSize(item, selectedSize))}',
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
                       ],
                     ),
                   ),
@@ -463,6 +652,7 @@ class _MenuScreenState extends State<MenuScreen>
   void _showAddToCartNotification(String itemName) {
     final overlay = Overlay.of(context);
     late OverlayEntry overlayEntry;
+    bool isRemoved = false;
 
     overlayEntry = OverlayEntry(
       builder: (context) => Positioned(
@@ -473,10 +663,20 @@ class _MenuScreenState extends State<MenuScreen>
           color: Colors.transparent,
           child: GestureDetector(
             behavior: HitTestBehavior.translucent,
-            onTap: () => overlayEntry.remove(),
+            onTap: () {
+              if (!isRemoved) {
+                isRemoved = true;
+                overlayEntry.remove();
+              }
+            },
             child: _AnimatedNotificationCard(
               message: '$itemName added to cart',
-              onDismiss: () => overlayEntry.remove(),
+              onDismiss: () {
+                if (!isRemoved) {
+                  isRemoved = true;
+                  overlayEntry.remove();
+                }
+              },
             ),
           ),
         ),
@@ -486,16 +686,18 @@ class _MenuScreenState extends State<MenuScreen>
     overlay.insert(overlayEntry);
 
     Future.delayed(const Duration(milliseconds: 2500), () {
-      if (overlayEntry.mounted) {
+      if (!isRemoved) {
+        isRemoved = true;
         overlayEntry.remove();
       }
     });
   }
 
+  // ✅ PERBAIKAN: Hapus setState agar _selectedIndex tetap 0 di MenuScreen
+  // Sehingga ketika user kembali dari Orders/About/Contact/Profile,
+  // bottom nav akan selalu highlight "Menu"
   void _onTabTapped(int index) {
     if (_selectedIndex == index) return;
-
-    setState(() => _selectedIndex = index);
 
     switch (index) {
       case 0:
@@ -524,7 +726,7 @@ class _MenuScreenState extends State<MenuScreen>
               builder: (_) => const ContactScreen(initialIndex: 3)),
         );
         break;
-        case 4:
+      case 4:
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -557,7 +759,6 @@ class _MenuScreenState extends State<MenuScreen>
               _buildSearchBar(),
               _buildPromoBanner(),
               _buildCategoryFilter(),
-              // ✅ FIXED: GridView bisa scroll dengan Expanded
               Expanded(
                 child: FadeTransition(
                   opacity: _fadeAnimation,
@@ -670,8 +871,8 @@ class _MenuScreenState extends State<MenuScreen>
               ),
               const SizedBox(width: 8),
               GestureDetector(
-                onTap: () {
-                  Navigator.push(
+                onTap: () async {
+                  await Navigator.push(
                     context,
                     PageRouteBuilder(
                       pageBuilder: (context, animation, secondaryAnimation) =>
@@ -680,7 +881,7 @@ class _MenuScreenState extends State<MenuScreen>
                         cartItemCount: _cartItemCount,
                         onCartChanged: (updatedCart) {
                           setState(() {
-                            _cartItems = updatedCart;
+                            _cartItems = List.from(updatedCart);
                           });
                         },
                       ),
@@ -701,6 +902,9 @@ class _MenuScreenState extends State<MenuScreen>
                       },
                     ),
                   );
+                  if (mounted) {
+                    setState(() {});
+                  }
                 },
                 child: Stack(
                   clipBehavior: Clip.none,
@@ -719,29 +923,37 @@ class _MenuScreenState extends State<MenuScreen>
                     ),
                     if (_cartItemCount > 0)
                       Positioned(
-                        right: -4,
-                        top: -4,
+                        right: -3,
+                        top: -3,
                         child: AnimatedContainer(
                           duration: const Duration(milliseconds: 300),
                           curve: Curves.elasticOut,
-                          padding: const EdgeInsets.all(5),
-                          decoration: const BoxDecoration(
-                            color: Color(0xFFE57373),
-                            shape: BoxShape.circle,
+                          constraints: const BoxConstraints(
+                            minWidth: 16,
+                            minHeight: 16,
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 4, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFE57373),
+                            borderRadius: BorderRadius.circular(8),
                             boxShadow: [
                               BoxShadow(
-                                color: Color(0xFFE57373),
-                                blurRadius: 8,
-                                spreadRadius: 2,
+                                color: const Color(0xFFE57373).withOpacity(0.5),
+                                blurRadius: 4,
+                                spreadRadius: 0.5,
                               ),
                             ],
                           ),
+                          alignment: Alignment.center,
                           child: Text(
                             '$_cartItemCount',
+                            textAlign: TextAlign.center,
                             style: const TextStyle(
                               color: Colors.white,
-                              fontSize: 11,
+                              fontSize: 9,
                               fontWeight: FontWeight.bold,
+                              height: 1.1,
                             ),
                           ),
                         ),
@@ -811,95 +1023,81 @@ class _MenuScreenState extends State<MenuScreen>
   Widget _buildPromoBanner() {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      height: 50,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
         decoration: BoxDecoration(
           gradient: const LinearGradient(
             colors: [Color(0xFF6B5B4F), Color(0xFF8D7B68)],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(4),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.15),
-                borderRadius: BorderRadius.circular(6),
-              ),
-              child: const Icon(
-                Icons.local_offer_rounded,
-                color: Colors.white,
-                size: 12,
-              ),
-            ),
-            const SizedBox(width: 6),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Text(
-                    'Buy 2 Get 1 Free',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
-                      height: 1.1,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 1),
-                  Text(
-                    'Cold Brews • Until Dec 31',
-                    style: TextStyle(
-                      color: Colors.white.withOpacity(0.85),
-                      fontSize: 9,
-                      fontWeight: FontWeight.w400,
-                      height: 1,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ),
-            ),
-            TextButton(
-              onPressed: () {
-                setState(() {
-                  _selectedCategory = 'Cold';
-                });
-              },
-              style: TextButton.styleFrom(
-                padding: EdgeInsets.zero,
-                minimumSize: Size.zero,
-                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                splashFactory: NoSplash.splashFactory,
-              ),
-              child: const Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    'Shop',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 10,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  SizedBox(width: 2),
-                  Icon(
-                    Icons.chevron_right_rounded,
-                    color: Colors.white,
-                    size: 14,
-                  ),
-                ],
-              ),
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF6B5B4F).withOpacity(0.25),
+              blurRadius: 6,
+              offset: const Offset(0, 3),
             ),
           ],
+        ),
+        // ✅ PERBAIKAN: Hapus onPageChanged karena _currentBannerIndex sudah dihapus
+        child: PageView.builder(
+          controller: _pageController,
+          itemCount: null,
+          itemBuilder: (context, index) {
+            final quote =
+                _motivationalQuotes[index % _motivationalQuotes.length];
+
+            return Stack(
+              alignment: Alignment.center,
+              children: [
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Text(
+                      quote['title'] as String,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 0.5,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      quote['subtitle'] as String,
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.9),
+                        fontSize: 10,
+                        fontWeight: FontWeight.w400,
+                      ),
+                      textAlign: TextAlign.center,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+                Positioned(
+                  left: 12,
+                  child: Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Icon(
+                      quote['icon'] as IconData,
+                      color: Colors.white,
+                      size: 16,
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
         ),
       ),
     );
@@ -988,7 +1186,6 @@ class _MenuScreenState extends State<MenuScreen>
     );
   }
 
-  // ✅ FIXED: GridView dengan scroll yang benar
   Widget _buildMenuGrid() {
     if (_filteredItems.isEmpty) {
       return Center(
@@ -1031,13 +1228,13 @@ class _MenuScreenState extends State<MenuScreen>
       },
       color: const Color(0xFF6B5B4F),
       child: Padding(
-        padding: const EdgeInsets.all(16), // ✅ Reduced padding
+        padding: const EdgeInsets.all(16),
         child: GridView.builder(
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 2,
-            crossAxisSpacing: 12, // ✅ Reduced spacing
-            mainAxisSpacing: 12, // ✅ Reduced spacing
-            childAspectRatio: 0.68, // ✅ Adjusted ratio untuk kartu lebih tinggi
+            crossAxisSpacing: 12,
+            mainAxisSpacing: 12,
+            childAspectRatio: 0.68,
           ),
           itemCount: _filteredItems.length,
           itemBuilder: (context, index) {
@@ -1050,6 +1247,10 @@ class _MenuScreenState extends State<MenuScreen>
   }
 
   Widget _buildMenuItem(Map<String, dynamic> item, int index) {
+    final sizes = item['sizes'] as List? ?? [];
+    final defaultSize =
+        sizes.contains('M') ? 'M' : (sizes.isNotEmpty ? sizes.first : 'M');
+
     return GestureDetector(
       onTap: () => _showCustomizationSheet(item),
       child: Hero(
@@ -1057,11 +1258,11 @@ class _MenuScreenState extends State<MenuScreen>
         child: Container(
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(16), // ✅ Reduced radius
+            borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withOpacity(0.06),
-                blurRadius: 12, // ✅ Reduced blur
+                blurRadius: 12,
                 offset: const Offset(0, 4),
               ),
             ],
@@ -1075,7 +1276,7 @@ class _MenuScreenState extends State<MenuScreen>
                   children: [
                     ClipRRect(
                       borderRadius: const BorderRadius.vertical(
-                        top: Radius.circular(16), // ✅ Reduced radius
+                        top: Radius.circular(16),
                       ),
                       child: Container(
                         width: double.infinity,
@@ -1097,46 +1298,6 @@ class _MenuScreenState extends State<MenuScreen>
                               ],
                             ),
                           ),
-                        ),
-                      ),
-                    ),
-                    Positioned(
-                      top: 8, // ✅ Reduced top position
-                      right: 8,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 6,
-                          vertical: 3,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.95),
-                          borderRadius: BorderRadius.circular(12),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.1),
-                              blurRadius: 6,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(
-                              Icons.star_rounded,
-                              size: 10, // ✅ Reduced icon size
-                              color: Color(0xFFFFB300),
-                            ),
-                            const SizedBox(width: 2),
-                            Text(
-                              '${item['rating']}',
-                              style: const TextStyle(
-                                fontSize: 9, // ✅ Reduced font size
-                                fontWeight: FontWeight.w600,
-                                color: Color(0xFF3E2723),
-                              ),
-                            ),
-                          ],
                         ),
                       ),
                     ),
@@ -1164,7 +1325,7 @@ class _MenuScreenState extends State<MenuScreen>
                           item['category'],
                           style: const TextStyle(
                             color: Colors.white,
-                            fontSize: 8, // ✅ Reduced font size
+                            fontSize: 8,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -1176,14 +1337,14 @@ class _MenuScreenState extends State<MenuScreen>
               Expanded(
                 flex: 2,
                 child: Padding(
-                  padding: const EdgeInsets.all(10), // ✅ Reduced padding
+                  padding: const EdgeInsets.all(10),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         item['name'],
                         style: const TextStyle(
-                          fontSize: 13, // ✅ Reduced font size
+                          fontSize: 13,
                           fontWeight: FontWeight.w700,
                           color: Color(0xFF3E2723),
                         ),
@@ -1194,7 +1355,7 @@ class _MenuScreenState extends State<MenuScreen>
                       Text(
                         item['description'],
                         style: const TextStyle(
-                          fontSize: 9, // ✅ Reduced font size
+                          fontSize: 9,
                           color: Color(0xFF757575),
                           height: 1.2,
                         ),
@@ -1209,18 +1370,11 @@ class _MenuScreenState extends State<MenuScreen>
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'Rp${_formatPrice(_getPriceForSize(item, (item['sizes'] as List).contains('M') ? 'M' : item['sizes'][0]))}',
+                                'Rp${_formatPrice(_getPriceForSize(item, defaultSize))}',
                                 style: const TextStyle(
-                                  fontSize: 14, // ✅ Reduced font size
+                                  fontSize: 14,
                                   fontWeight: FontWeight.bold,
                                   color: Color(0xFF6B5B4F),
-                                ),
-                              ),
-                              Text(
-                                '${item['reviews']} reviews',
-                                style: const TextStyle(
-                                  fontSize: 8, // ✅ Reduced font size
-                                  color: Color(0xFFBDBDBD),
                                 ),
                               ),
                             ],
@@ -1228,7 +1382,7 @@ class _MenuScreenState extends State<MenuScreen>
                           GestureDetector(
                             onTap: () => _showCustomizationSheet(item),
                             child: Container(
-                              width: 32, // ✅ Reduced size
+                              width: 32,
                               height: 32,
                               decoration: BoxDecoration(
                                 gradient: const LinearGradient(
@@ -1251,7 +1405,7 @@ class _MenuScreenState extends State<MenuScreen>
                               child: const Icon(
                                 Icons.add_rounded,
                                 color: Colors.white,
-                                size: 16, // ✅ Reduced icon size
+                                size: 16,
                               ),
                             ),
                           ),
@@ -1391,8 +1545,8 @@ class _MenuScreenState extends State<MenuScreen>
                   const SizedBox(width: 12),
                   Expanded(
                     child: ElevatedButton(
-                        onPressed: () {
-                        OrderService().clearOrders(); // ← tambah ini
+                      onPressed: () {
+                        OrderService().clearOrders();
                         Navigator.pushAndRemoveUntil(
                           context,
                           MaterialPageRoute(
@@ -1449,9 +1603,6 @@ class _MenuScreenState extends State<MenuScreen>
   }
 }
 
-// ============================================================================
-// ✅ MODERN NOTIFICATION WIDGET
-// ============================================================================
 class _AnimatedNotificationCard extends StatefulWidget {
   final String message;
   final VoidCallback onDismiss;

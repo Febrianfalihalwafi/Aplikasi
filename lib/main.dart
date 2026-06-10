@@ -4,7 +4,6 @@ import 'services/order_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // Load orders untuk user yang sudah login sebelumnya
   await OrderService().loadOrdersForUser();
   runApp(const MyApp());
 }

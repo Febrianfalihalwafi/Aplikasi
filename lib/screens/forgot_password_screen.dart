@@ -184,8 +184,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         const SizedBox(height: 8),
         const Text(
           'Masukkan email akun kamu. Kami akan kirim kode reset ke email tersebut.',
-          style: TextStyle(
-              fontSize: 14, color: Color(0xFF8D6E63), height: 1.5),
+          style: TextStyle(fontSize: 14, color: Color(0xFF8D6E63), height: 1.5),
         ),
         const SizedBox(height: 32),
         Form(
@@ -262,9 +261,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     Text(
                       'Kode dikirim ke $_sentEmail\nCopy kode dari email, paste di bawah.',
                       style: const TextStyle(
-                          fontSize: 12,
-                          color: Color(0xFF8D6E63),
-                          height: 1.4),
+                          fontSize: 12, color: Color(0xFF8D6E63), height: 1.4),
                     ),
                   ],
                 ),
@@ -339,8 +336,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                           : Icons.visibility_off_outlined,
                       color: const Color(0xFF9E9E9E),
                     ),
-                    onPressed: () =>
-                        setState(() => _obscureNew = !_obscureNew),
+                    onPressed: () => setState(() => _obscureNew = !_obscureNew),
                   ),
                 ),
                 validator: (v) {
@@ -400,9 +396,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               // Kirim ulang
               Center(
                 child: TextButton(
-                  onPressed: _isLoading
-                      ? null
-                      : () => setState(() => _step = 0),
+                  onPressed:
+                      _isLoading ? null : () => setState(() => _step = 0),
                   child: const Text(
                     'Tidak dapat kode? Kirim ulang',
                     style: TextStyle(
@@ -448,8 +443,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         const Text(
           'Password kamu sudah diperbarui.\nSilakan login dengan password baru.',
           textAlign: TextAlign.center,
-          style: TextStyle(
-              fontSize: 14, color: Color(0xFF8D6E63), height: 1.5),
+          style: TextStyle(fontSize: 14, color: Color(0xFF8D6E63), height: 1.5),
         ),
         const SizedBox(height: 40),
         _buildPrimaryButton(

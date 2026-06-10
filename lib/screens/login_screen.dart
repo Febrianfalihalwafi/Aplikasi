@@ -22,10 +22,11 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _isGoogleLoading = false;
 
   final GoogleSignIn _googleSignIn = GoogleSignIn(
-  // Web client ID (untuk serverClientId - wajib agar dapat accessToken)
-  serverClientId: '335247538737-gh8vp9bv700tmmi9avq20ls6oe20nv5p.apps.googleusercontent.com',
-  scopes: ['email', 'profile'],
-);
+    // Web client ID (untuk serverClientId - wajib agar dapat accessToken)
+    serverClientId:
+        '335247538737-gh8vp9bv700tmmi9avq20ls6oe20nv5p.apps.googleusercontent.com',
+    scopes: ['email', 'profile'],
+  );
 
   @override
   void dispose() {
@@ -319,8 +320,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (_) =>
-                                      const ForgotPasswordScreen(),
+                                  builder: (_) => const ForgotPasswordScreen(),
                                 ),
                               );
                             },
@@ -460,8 +460,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) =>
-                                      const RegisterScreen(),
+                                  builder: (context) => const RegisterScreen(),
                                 ),
                               );
                             },

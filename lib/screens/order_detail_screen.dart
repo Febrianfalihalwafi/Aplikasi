@@ -19,7 +19,6 @@ class _OrderDetailScreenState extends State<OrderDetailScreen>
   late AnimationController _animationController;
   late Animation<double> _slideAnimation;
 
-  // ✅ FIX: order bisa diupdate dari backend
   late Order _currentOrder;
   Timer? _pollingTimer;
 
@@ -38,7 +37,6 @@ class _OrderDetailScreenState extends State<OrderDetailScreen>
     );
     _animationController.forward();
 
-    // ✅ Fetch status terbaru dari backend, lalu poll tiap 10 detik
     _fetchOrderStatus();
     _pollingTimer = Timer.periodic(
       const Duration(seconds: 10),
@@ -46,13 +44,10 @@ class _OrderDetailScreenState extends State<OrderDetailScreen>
     );
   }
 
-  // ✅ FIX: Ambil status order terbaru dari backend
   Future<void> _fetchOrderStatus() async {
-    // Hanya poll jika order belum selesai/dibatalkan
     if (_currentOrder.status == 'Completed' ||
         _currentOrder.status == 'Cancelled') return;
 
-    // Kalau ID bukan MongoDB _id (misal pakai ID lokal CT-xxx), skip polling
     if (_currentOrder.id.startsWith('CT-')) return;
 
     try {
@@ -61,8 +56,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen>
       if (token == null) return;
 
       final response = await http.get(
-        Uri.parse(
-            'https://coffee-telkom.my.id/api/order/${_currentOrder.id}'),
+        Uri.parse('https://coffee-telkom.my.id/api/order/${_currentOrder.id}'),
         headers: {'Authorization': 'Bearer $token'},
       );
 
@@ -175,7 +169,6 @@ class _OrderDetailScreenState extends State<OrderDetailScreen>
               ),
             ),
           ),
-
           SliverPadding(
             padding: const EdgeInsets.all(20),
             sliver: SliverList(
@@ -241,12 +234,10 @@ class _OrderDetailScreenState extends State<OrderDetailScreen>
         children: [
           Row(children: [
             Icon(Icons.calendar_today_rounded,
-                size: 16,
-                color: const Color(0xFF6B5B4F).withOpacity(0.7)),
+                size: 16, color: const Color(0xFF6B5B4F).withOpacity(0.7)),
             const SizedBox(width: 8),
             Text('Ordered: ${order.formattedDate}',
-                style:
-                    const TextStyle(fontSize: 13, color: Color(0xFF757575))),
+                style: const TextStyle(fontSize: 13, color: Color(0xFF757575))),
           ]),
           const SizedBox(height: 10),
           Row(children: [
@@ -259,18 +250,15 @@ class _OrderDetailScreenState extends State<OrderDetailScreen>
             const SizedBox(width: 8),
             Text(
                 '${order.orderType}${order.tableNumber != null && order.tableNumber!.isNotEmpty ? ' • ${order.tableNumber}' : ''}',
-                style:
-                    const TextStyle(fontSize: 13, color: Color(0xFF757575))),
+                style: const TextStyle(fontSize: 13, color: Color(0xFF757575))),
           ]),
           const SizedBox(height: 10),
           Row(children: [
             Icon(Icons.payment_rounded,
-                size: 16,
-                color: const Color(0xFF6B5B4F).withOpacity(0.7)),
+                size: 16, color: const Color(0xFF6B5B4F).withOpacity(0.7)),
             const SizedBox(width: 8),
             Text('Paid via ${_getPaymentName(order.paymentMethod)}',
-                style:
-                    const TextStyle(fontSize: 13, color: Color(0xFF757575))),
+                style: const TextStyle(fontSize: 13, color: Color(0xFF757575))),
           ]),
         ],
       ),
@@ -314,7 +302,8 @@ class _OrderDetailScreenState extends State<OrderDetailScreen>
                           fontSize: 11, color: Color(0xFF9E9E9E))),
                 ],
                 const SizedBox(height: 4),
-                Text('Rp${_formatPrice(item.price.toDouble())} × ${item.quantity}',
+                Text(
+                    'Rp${_formatPrice(item.price.toDouble())} × ${item.quantity}',
                     style: const TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w500,
@@ -355,11 +344,11 @@ class _OrderDetailScreenState extends State<OrderDetailScreen>
           Container(
             padding: const EdgeInsets.only(top: 12),
             decoration: const BoxDecoration(
-              border: Border(
-                  top: BorderSide(color: Color(0xFFE0D6C9), width: 1)),
+              border:
+                  Border(top: BorderSide(color: Color(0xFFE0D6C9), width: 1)),
             ),
-            child: _buildPriceRow('Total Paid',
-                'Rp${_formatPrice(order.total)}',
+            child: _buildPriceRow(
+                'Total Paid', 'Rp${_formatPrice(order.total)}',
                 isTotal: true),
           ),
         ],
@@ -375,17 +364,15 @@ class _OrderDetailScreenState extends State<OrderDetailScreen>
             style: TextStyle(
               fontSize: isTotal ? 15 : 13,
               fontWeight: isTotal ? FontWeight.w600 : FontWeight.w400,
-              color: isTotal
-                  ? const Color(0xFF3E2723)
-                  : const Color(0xFF757575),
+              color:
+                  isTotal ? const Color(0xFF3E2723) : const Color(0xFF757575),
             )),
         Text(value,
             style: TextStyle(
               fontSize: isTotal ? 17 : 13,
               fontWeight: isTotal ? FontWeight.bold : FontWeight.w500,
-              color: isTotal
-                  ? const Color(0xFF6B5B4F)
-                  : const Color(0xFF3E2723),
+              color:
+                  isTotal ? const Color(0xFF6B5B4F) : const Color(0xFF3E2723),
             )),
       ],
     );
@@ -420,7 +407,6 @@ class _OrderDetailScreenState extends State<OrderDetailScreen>
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
                       color: Color(0xFF3E2723))),
-              // ✅ Indikator auto-refresh
               const Row(
                 children: [
                   SizedBox(
@@ -433,8 +419,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen>
                   ),
                   SizedBox(width: 6),
                   Text('Live',
-                      style: TextStyle(
-                          fontSize: 11, color: Color(0xFF9E9E9E))),
+                      style: TextStyle(fontSize: 11, color: Color(0xFF9E9E9E))),
                 ],
               ),
             ],
@@ -447,8 +432,8 @@ class _OrderDetailScreenState extends State<OrderDetailScreen>
             final isCurrent = index == currentIndex;
 
             return Padding(
-              padding: EdgeInsets.only(
-                  bottom: index < statuses.length - 1 ? 16 : 0),
+              padding:
+                  EdgeInsets.only(bottom: index < statuses.length - 1 ? 16 : 0),
               child: Row(
                 children: [
                   Container(
@@ -456,11 +441,9 @@ class _OrderDetailScreenState extends State<OrderDetailScreen>
                     height: 24,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color:
-                          isActive ? statusColor : const Color(0xFFE0E0E0),
+                      color: isActive ? statusColor : const Color(0xFFE0E0E0),
                       border: Border.all(
-                        color:
-                            isActive ? statusColor : const Color(0xFFBDBDBD),
+                        color: isActive ? statusColor : const Color(0xFFBDBDBD),
                         width: 2,
                       ),
                     ),
@@ -477,9 +460,8 @@ class _OrderDetailScreenState extends State<OrderDetailScreen>
                         Text(status,
                             style: TextStyle(
                               fontSize: 14,
-                              fontWeight: isCurrent
-                                  ? FontWeight.w600
-                                  : FontWeight.w400,
+                              fontWeight:
+                                  isCurrent ? FontWeight.w600 : FontWeight.w400,
                               color: isActive
                                   ? const Color(0xFF3E2723)
                                   : const Color(0xFFBDBDBD),
@@ -489,8 +471,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen>
                             padding: const EdgeInsets.only(top: 2),
                             child: Text(_getStatusDescription(status),
                                 style: const TextStyle(
-                                    fontSize: 11,
-                                    color: Color(0xFF9E9E9E))),
+                                    fontSize: 11, color: Color(0xFF9E9E9E))),
                           ),
                       ],
                     ),
@@ -528,37 +509,57 @@ class _OrderDetailScreenState extends State<OrderDetailScreen>
 
   Widget _buildActionButtons(Order order) {
     if (order.status == 'Completed' || order.status == 'Cancelled') {
-      return Row(
+      return Column(
         children: [
-          Expanded(
-            child: OutlinedButton(
+          SizedBox(
+            width: double.infinity,
+            height: 52,
+            child: ElevatedButton.icon(
               onPressed: () =>
                   Navigator.popUntil(context, (route) => route.isFirst),
-              style: OutlinedButton.styleFrom(
-                foregroundColor: const Color(0xFF6B5B4F),
-                side: const BorderSide(color: Color(0xFF6B5B4F)),
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)),
-              ),
-              child: const Text('Reorder',
-                  style: TextStyle(fontWeight: FontWeight.w600)),
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: ElevatedButton(
-              onPressed: () => _showRateDialog(),
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF6B5B4F),
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)),
+                    borderRadius: BorderRadius.circular(14)),
                 elevation: 0,
+                shadowColor: Colors.transparent,
               ),
-              child: const Text('Rate',
-                  style: TextStyle(fontWeight: FontWeight.w600)),
+              icon: const Icon(Icons.refresh_rounded, size: 20),
+              label: const Text(
+                'Order Lagi',
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 0.3,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            height: 52,
+            child: OutlinedButton.icon(
+              onPressed: () => _showRateDialog(),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: const Color(0xFF6B5B4F),
+                side: const BorderSide(
+                  color: Color(0xFF6B5B4F),
+                  width: 1.5,
+                ),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14)),
+              ),
+              icon: const Icon(Icons.emoji_emotions_rounded, size: 20),
+              label: const Text(
+                'Beri Feedback',
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 0.3,
+                ),
+              ),
             ),
           ),
         ],
@@ -583,8 +584,8 @@ class _OrderDetailScreenState extends State<OrderDetailScreen>
           style: ElevatedButton.styleFrom(
             backgroundColor: const Color(0xFF81C784),
             foregroundColor: Colors.white,
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             elevation: 0,
           ),
           child: const Row(
@@ -593,8 +594,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen>
               Icon(Icons.check_circle_rounded, size: 20),
               SizedBox(width: 8),
               Text("I've Picked Up My Order",
-                  style:
-                      TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
             ],
           ),
         ),
@@ -620,79 +620,195 @@ class _OrderDetailScreenState extends State<OrderDetailScreen>
   }
 
   void _showRateDialog() {
-    int selectedRating = 5;
+    int selectedRating = 3;
+
+    // ✅ Emoji rating system
+    final List<Map<String, dynamic>> ratingOptions = [
+      {
+        'emoji': '😞',
+        'label': 'Sangat Kecewa',
+        'value': 1,
+        'color': const Color(0xFFE57373)
+      },
+      {
+        'emoji': '😕',
+        'label': 'Kurang Puas',
+        'value': 2,
+        'color': const Color(0xFFFFB74D)
+      },
+      {
+        'emoji': '🙂',
+        'label': 'Biasa Saja',
+        'value': 3,
+        'color': const Color(0xFFFFD54F)
+      },
+      {
+        'emoji': '😊',
+        'label': 'Puas',
+        'value': 4,
+        'color': const Color(0xFF81C784)
+      },
+      {
+        'emoji': '🤩',
+        'label': 'Luar Biasa',
+        'value': 5,
+        'color': const Color(0xFF4CAF50)
+      },
+    ];
+
     showDialog(
       context: context,
       builder: (context) => StatefulBuilder(
-        builder: (context, setDialogState) => Dialog(
-          shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20)),
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text('Rate Your Order',
+        builder: (context, setDialogState) {
+          final selectedOption = ratingOptions.firstWhere(
+            (opt) => opt['value'] == selectedRating,
+            orElse: () => ratingOptions[2],
+          );
+
+          return Dialog(
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+            backgroundColor: Colors.white,
+            child: Padding(
+              padding: const EdgeInsets.all(28),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // ✅ Large emoji display
+                  AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 300),
+                    child: Text(
+                      selectedOption['emoji'] as String,
+                      key: ValueKey<int>(selectedRating),
+                      style: const TextStyle(fontSize: 80),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // ✅ Title
+                  const Text(
+                    'Bagaimana Pesanan Anda?',
                     style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF3E2723))),
-                const SizedBox(height: 8),
-                const Text('How was your experience?',
-                    style: TextStyle(fontSize: 13, color: Color(0xFF9E9E9E))),
-                const SizedBox(height: 20),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: List.generate(5, (index) {
-                    return GestureDetector(
-                      onTap: () => setDialogState(
-                          () => selectedRating = index + 1),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 4),
-                        child: Icon(
-                          index < selectedRating
-                              ? Icons.star_rounded
-                              : Icons.star_outline_rounded,
-                          size: 36,
-                          color: const Color(0xFFFFB300),
-                        ),
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF3E2723),
+                      letterSpacing: 0.3,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 8),
+
+                  // ✅ Feedback text
+                  AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 300),
+                    child: Text(
+                      selectedOption['label'] as String,
+                      key: ValueKey<String>(selectedOption['label'] as String),
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: selectedOption['color'] as Color,
+                        letterSpacing: 0.3,
                       ),
-                    );
-                  }),
-                ),
-                const SizedBox(height: 24),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                              'Terima kasih! Rating $selectedRating bintang diberikan.'),
-                          backgroundColor: const Color(0xFF6B5B4F),
-                          behavior: SnackBarBehavior.floating,
+                    ),
+                  ),
+                  const SizedBox(height: 28),
+
+                  // ✅ Emoji selector row
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: ratingOptions.map((option) {
+                      final isSelected = option['value'] == selectedRating;
+                      return GestureDetector(
+                        onTap: () {
+                          setDialogState(() {
+                            selectedRating = option['value'] as int;
+                          });
+                        },
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
+                          curve: Curves.elasticOut,
+                          width: isSelected ? 56 : 44,
+                          height: isSelected ? 56 : 44,
+                          decoration: BoxDecoration(
+                            color: isSelected
+                                ? (option['color'] as Color).withOpacity(0.15)
+                                : Colors.transparent,
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: isSelected
+                                  ? option['color'] as Color
+                                  : const Color(0xFFE0E0E0),
+                              width: isSelected ? 2.5 : 1.5,
+                            ),
+                          ),
+                          child: Center(
+                            child: Text(
+                              option['emoji'] as String,
+                              style: TextStyle(
+                                fontSize: isSelected ? 32 : 24,
+                              ),
+                            ),
+                          ),
                         ),
                       );
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF6B5B4F),
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12)),
-                    ),
-                    child: const Text('Kirim Rating',
-                        style: TextStyle(fontWeight: FontWeight.w600)),
+                    }).toList(),
                   ),
-                ),
-              ],
+                  const SizedBox(height: 28),
+
+                  // ✅ Submit button
+                  SizedBox(
+                    width: double.infinity,
+                    height: 52,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                                'Terima kasih atas feedback Anda! ${selectedOption['label']}'),
+                            backgroundColor: selectedOption['color'] as Color,
+                            behavior: SnackBarBehavior.floating,
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10)),
+                          ),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF6B5B4F),
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14)),
+                        elevation: 0,
+                        shadowColor: Colors.transparent,
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: const [
+                          Icon(Icons.send_rounded, size: 18),
+                          SizedBox(width: 8),
+                          Text(
+                            'Kirim Feedback',
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: 0.3,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ),
+          );
+        },
       ),
     );
   }
-   Widget _getItemImage(String name) {
+
+  Widget _getItemImage(String name) {
     final map = {
       'iced latte': 'assets/images/iced-latte.jpg',
       'latte': 'assets/images/latte.jpg',
@@ -723,10 +839,9 @@ class _OrderDetailScreenState extends State<OrderDetailScreen>
   }
 
   String _getPaymentName(String id) {
+    // ✅ Hanya QRIS dan Cash
     const methods = {
       'qris': 'QRIS',
-      'gopay': 'GoPay',
-      'ovo': 'OVO',
       'cash': 'Cash',
     };
     return methods[id] ?? id;

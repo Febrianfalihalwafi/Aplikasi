@@ -126,13 +126,6 @@ class ProductDetailScreen extends StatelessWidget {
                   ),
 
                   const SizedBox(height: 8),
-                  Text(
-                    '${product['reviews']} customer reviews',
-                    style: const TextStyle(
-                      fontSize: 14,
-                      color: Color(0xFF9E9E9E),
-                    ),
-                  ),
 
                   const SizedBox(height: 20),
 

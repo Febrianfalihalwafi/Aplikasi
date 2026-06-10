@@ -3,7 +3,7 @@ import 'menu_screen.dart';
 import 'about_screen.dart';
 import 'orders_screen.dart';
 import 'login_screen.dart';
-import 'profile_screen.dart';  
+import 'profile_screen.dart';
 
 class ContactScreen extends StatefulWidget {
   final int initialIndex;
@@ -15,8 +15,7 @@ class ContactScreen extends StatefulWidget {
 }
 
 class _ContactScreenState extends State<ContactScreen> {
-  // ✅ FIX: Inisialisasi _selectedIndex dengan nilai default, bukan late
-  int _selectedIndex = 3; // Default 3 = Contact
+  int _selectedIndex = 3;
 
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
@@ -36,7 +35,6 @@ class _ContactScreenState extends State<ContactScreen> {
   @override
   void initState() {
     super.initState();
-    // ✅ FIX: Sinkronkan _selectedIndex dengan widget.initialIndex
     _selectedIndex = widget.initialIndex;
   }
 
@@ -48,27 +46,25 @@ class _ContactScreenState extends State<ContactScreen> {
     super.dispose();
   }
 
-  // ✅ FIX: Perbaiki navigasi dengan index yang konsisten (0-3)
+  // ✅ FIX: Hapus setState agar konsisten dengan MenuScreen
   void _onTabTapped(int index) {
     if (_selectedIndex == index) return;
 
-    setState(() => _selectedIndex = index);
-
     switch (index) {
-      case 0: // Menu
+      case 0:
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (_) => const MenuScreen(initialIndex: 0)),
         );
         break;
-      case 1: // Orders
+      case 1:
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
               builder: (_) => const OrdersScreen(initialIndex: 1)),
         );
         break;
-      case 2: // About
+      case 2:
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (_) => const AboutScreen(initialIndex: 2)),
@@ -76,7 +72,7 @@ class _ContactScreenState extends State<ContactScreen> {
         break;
       case 3:
         break;
-      case 4:                                          // ← TAMBAH
+      case 4:
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
@@ -90,7 +86,6 @@ class _ContactScreenState extends State<ContactScreen> {
   Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: () async {
-        // ✅ FIX: Handle back button agar kembali ke Menu
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (_) => const MenuScreen(initialIndex: 0)),
@@ -106,14 +101,15 @@ class _ContactScreenState extends State<ContactScreen> {
               Expanded(
                 child: SingleChildScrollView(
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                  physics: const ClampingScrollPhysics(),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       _buildTitle(),
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 24),
                       _buildContactCards(),
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 28),
                       _buildMessageForm(),
                       const SizedBox(height: 20),
                     ],
@@ -147,12 +143,22 @@ class _ContactScreenState extends State<ContactScreen> {
           Row(
             children: [
               Container(
-                width: 32,
-                height: 32,
+                width: 36,
+                height: 36,
                 decoration: BoxDecoration(
-                  border:
-                      Border.all(color: const Color(0xFF6B5B4F), width: 1.2),
-                  borderRadius: BorderRadius.circular(16),
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF8D7B68), Color(0xFF6B5B4F)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(18),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF6B5B4F).withOpacity(0.2),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
                 ),
                 child: ClipOval(
                   child: Image.asset(
@@ -163,32 +169,48 @@ class _ContactScreenState extends State<ContactScreen> {
                             style: TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.bold,
-                                color: Color(0xFF6B5B4F)))),
+                                color: Colors.white))),
                   ),
                 ),
               ),
-              const SizedBox(width: 10),
-              const Text(
-                'COFFEE TELKOM',
-                style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w700,
-                    color: Color(0xFF3E2723)),
+              const SizedBox(width: 12),
+              const Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'COFFEE TELKOM',
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF3E2723),
+                      letterSpacing: 0.3,
+                    ),
+                  ),
+                  Text(
+                    'Contact Us',
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: Color(0xFF9E9E9E),
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
           Row(
             children: [
               IconButton(
-                icon: const Icon(Icons.logout_rounded,
-                    size: 20, color: Color(0xFF6B5B4F)),
-                onPressed: () => _showLogoutDialog(),
-              ),
-              const SizedBox(width: 4),
-              IconButton(
-                icon: const Icon(Icons.shopping_bag_outlined,
-                    size: 20, color: Color(0xFF6B5B4F)),
-                onPressed: () {},
+                icon: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF5F0E8),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(Icons.logout_rounded,
+                      size: 18, color: Color(0xFF6B5B4F)),
+                ),
+                onPressed: _showLogoutDialog,
               ),
             ],
           ),
@@ -200,23 +222,64 @@ class _ContactScreenState extends State<ContactScreen> {
   Widget _buildTitle() {
     return Column(
       children: [
-        const Text(
-          "LET'S START A",
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w400,
-            color: Color(0xFF3E2723),
-            letterSpacing: 1,
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+          decoration: BoxDecoration(
+            color: const Color(0xFF6B5B4F).withOpacity(0.08),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: const Color(0xFF6B5B4F).withOpacity(0.15),
+            ),
+          ),
+          child: const Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.support_agent_rounded,
+                  size: 14, color: Color(0xFF6B5B4F)),
+              SizedBox(width: 6),
+              Text(
+                'GET IN TOUCH',
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF6B5B4F),
+                  letterSpacing: 2,
+                ),
+              ),
+            ],
           ),
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: 14),
         const Text(
-          'CONVERSATION',
+          "LET'S START A\nCONVERSATION",
           style: TextStyle(
-            fontSize: 26,
-            fontWeight: FontWeight.w800,
-            color: Color(0xFF8D7B68),
-            letterSpacing: 0.5,
+            fontSize: 28,
+            fontWeight: FontWeight.w900,
+            color: Color(0xFF3E2723),
+            height: 1.1,
+            letterSpacing: -0.3,
+          ),
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 12),
+        const Text(
+          'Have questions, feedback, or partnership ideas?\nWe\'d love to hear from you.',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: 13,
+            color: Color(0xFF757575),
+            height: 1.5,
+          ),
+        ),
+        const SizedBox(height: 16),
+        Container(
+          width: 50,
+          height: 3,
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [Color(0xFF6B5B4F), Color(0xFF8D7B68)],
+            ),
+            borderRadius: BorderRadius.circular(2),
           ),
         ),
       ],
@@ -226,110 +289,137 @@ class _ContactScreenState extends State<ContactScreen> {
   Widget _buildContactCards() {
     final contactItems = [
       {
-        'icon': Icons.email_outlined,
-        'iconColor': const Color(0xFF64B5F6),
-        'title': 'EMAIL US',
+        'icon': Icons.email_rounded,
+        'color': const Color(0xFF64B5F6),
+        'title': 'Email Us',
         'subtitle': 'hello@coffeetelkom.id',
         'desc': 'We respond within 24 hours',
       },
       {
-        'icon': Icons.location_on_outlined,
-        'iconColor': const Color(0xFF81C784),
-        'title': 'VISIT US',
+        'icon': Icons.location_on_rounded,
+        'color': const Color(0xFF81C784),
+        'title': 'Visit Our Store',
         'subtitle': 'Telkom Innovation Center, Bandung',
         'desc': 'Open daily 8AM – 8PM',
       },
       {
-        'icon': Icons.camera_alt_outlined,
-        'iconColor': const Color(0xFFFF8A65),
-        'title': 'INSTAGRAM',
+        'icon': Icons.camera_alt_rounded,
+        'color': const Color(0xFFFF8A65),
+        'title': 'Follow Us',
         'subtitle': '@coffeetelkom',
         'desc': 'DM us for quick questions',
       },
     ];
 
     return Column(
-      children: contactItems
-          .map((item) => Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: Container(
-                  padding: const EdgeInsets.all(16),
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Padding(
+          padding: EdgeInsets.only(left: 4, bottom: 14),
+          child: Text(
+            'Reach Us Directly',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              color: Color(0xFF3E2723),
+            ),
+          ),
+        ),
+        ...contactItems.map((item) {
+          final color = item['color'] as Color;
+          return Container(
+            margin: const EdgeInsets.only(bottom: 12),
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: color.withOpacity(0.15),
+                width: 1,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.03),
+                  blurRadius: 12,
+                  offset: const Offset(0, 3),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(14),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.04),
-                        blurRadius: 12,
-                        offset: const Offset(0, 3),
-                      ),
-                    ],
+                    gradient: LinearGradient(
+                      colors: [
+                        color.withOpacity(0.15),
+                        color.withOpacity(0.05),
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Row(
+                  child: Icon(
+                    item['icon'] as IconData,
+                    color: color,
+                    size: 22,
+                  ),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Container(
-                        padding: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          color: (item['iconColor'] as Color).withOpacity(0.12),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Icon(
-                          item['icon'] as IconData,
-                          color: item['iconColor'] as Color,
-                          size: 22,
+                      Text(
+                        item['title'] as String,
+                        style: const TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF9E9E9E),
+                          letterSpacing: 0.8,
                         ),
                       ),
-                      const SizedBox(width: 14),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              item['title'] as String,
-                              style: const TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w600,
-                                color: Color(0xFF9E9E9E),
-                                letterSpacing: 0.5,
-                              ),
-                            ),
-                            const SizedBox(height: 3),
-                            Text(
-                              item['subtitle'] as String,
-                              style: const TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                                color: Color(0xFF3E2723),
-                              ),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              item['desc'] as String,
-                              style: const TextStyle(
-                                fontSize: 11.5,
-                                color: Color(0xFF9E9E9E),
-                              ),
-                            ),
-                          ],
+                      const SizedBox(height: 3),
+                      Text(
+                        item['subtitle'] as String,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF3E2723),
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        item['desc'] as String,
+                        style: const TextStyle(
+                          fontSize: 11.5,
+                          color: Color(0xFF9E9E9E),
                         ),
                       ),
                     ],
                   ),
                 ),
-              ))
-          .toList(),
+              ],
+            ),
+          );
+        }),
+      ],
     );
   }
 
   Widget _buildMessageForm() {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(22),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: const Color(0xFFE0D6C9).withOpacity(0.5),
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withOpacity(0.04),
             blurRadius: 20,
             offset: const Offset(0, 4),
           ),
@@ -340,33 +430,51 @@ class _ContactScreenState extends State<ContactScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Section header
+            Row(
+              children: [
+                Container(
+                  width: 4,
+                  height: 24,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF6B5B4F), Color(0xFF8D7B68)],
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                    ),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                const Text(
+                  'Send Us a Message',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF3E2723),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 6),
             const Text(
-              'SEND US A MESSAGE',
+              'Fill out the form below and we\'ll get back to you shortly.',
               style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
-                color: Color(0xFF3E2723),
-                letterSpacing: 0.5,
+                fontSize: 12,
+                color: Color(0xFF9E9E9E),
+                height: 1.4,
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
 
             // Inquiry Type Dropdown
-            const Text(
-              'I\'M REACHING OUT ABOUT',
-              style: TextStyle(
-                fontSize: 10,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFF9E9E9E),
-                letterSpacing: 0.8,
-              ),
-            ),
+            _buildLabel('I\'M REACHING OUT ABOUT', Icons.category_rounded),
             const SizedBox(height: 8),
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
               decoration: BoxDecoration(
                 border: Border.all(color: const Color(0xFFE0D6C9)),
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(12),
                 color: const Color(0xFFF5F0E8),
               ),
               child: DropdownButtonHideUnderline(
@@ -394,42 +502,16 @@ class _ContactScreenState extends State<ContactScreen> {
                 ),
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 18),
 
             // Name Field
-            const Text(
-              'YOUR NAME',
-              style: TextStyle(
-                fontSize: 10,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFF9E9E9E),
-                letterSpacing: 0.8,
-              ),
-            ),
+            _buildLabel('YOUR NAME', Icons.person_outline_rounded),
             const SizedBox(height: 8),
             TextFormField(
               controller: _nameController,
-              decoration: InputDecoration(
+              decoration: _inputDecoration(
                 hintText: 'Enter your full name',
-                hintStyle:
-                    const TextStyle(fontSize: 13, color: Color(0xFFBDBDBD)),
-                filled: true,
-                fillColor: const Color(0xFFF5F0E8),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: const BorderSide(color: Color(0xFFE0D6C9)),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: const BorderSide(color: Color(0xFFE0D6C9)),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide:
-                      const BorderSide(color: Color(0xFF6B5B4F), width: 2),
-                ),
-                contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                prefixIcon: Icons.person_outline_rounded,
               ),
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
@@ -438,43 +520,17 @@ class _ContactScreenState extends State<ContactScreen> {
                 return null;
               },
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 18),
 
             // Email Field
-            const Text(
-              'YOUR EMAIL',
-              style: TextStyle(
-                fontSize: 10,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFF9E9E9E),
-                letterSpacing: 0.8,
-              ),
-            ),
+            _buildLabel('YOUR EMAIL', Icons.email_outlined),
             const SizedBox(height: 8),
             TextFormField(
               controller: _emailController,
               keyboardType: TextInputType.emailAddress,
-              decoration: InputDecoration(
+              decoration: _inputDecoration(
                 hintText: 'your@email.com',
-                hintStyle:
-                    const TextStyle(fontSize: 13, color: Color(0xFFBDBDBD)),
-                filled: true,
-                fillColor: const Color(0xFFF5F0E8),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: const BorderSide(color: Color(0xFFE0D6C9)),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: const BorderSide(color: Color(0xFFE0D6C9)),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide:
-                      const BorderSide(color: Color(0xFF6B5B4F), width: 2),
-                ),
-                contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                prefixIcon: Icons.alternate_email_rounded,
               ),
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
@@ -486,42 +542,18 @@ class _ContactScreenState extends State<ContactScreen> {
                 return null;
               },
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 18),
 
             // Message Field
-            const Text(
-              'YOUR MESSAGE',
-              style: TextStyle(
-                fontSize: 10,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFF9E9E9E),
-                letterSpacing: 0.8,
-              ),
-            ),
+            _buildLabel('YOUR MESSAGE', Icons.chat_bubble_outline_rounded),
             const SizedBox(height: 8),
             TextFormField(
               controller: _messageController,
               maxLines: 5,
-              decoration: InputDecoration(
+              decoration: _inputDecoration(
                 hintText: 'Write your message or suggestion...',
-                hintStyle:
-                    const TextStyle(fontSize: 13, color: Color(0xFFBDBDBD)),
-                filled: true,
-                fillColor: const Color(0xFFF5F0E8),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: const BorderSide(color: Color(0xFFE0D6C9)),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: const BorderSide(color: Color(0xFFE0D6C9)),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide:
-                      const BorderSide(color: Color(0xFF6B5B4F), width: 2),
-                ),
-                contentPadding: const EdgeInsets.all(14),
+                prefixIcon: Icons.edit_note_rounded,
+                alignPrefix: TextAlign.start,
               ),
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
@@ -533,77 +565,145 @@ class _ContactScreenState extends State<ContactScreen> {
                 return null;
               },
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 22),
 
             // Send Button
             SizedBox(
               width: double.infinity,
-              height: 48,
+              height: 52,
               child: ElevatedButton(
                 onPressed: _isSubmitting ? null : _sendMessage,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: _isSubmitting
-                      ? const Color(0xFFBDBDBD)
-                      : const Color(0xFF6B5B4F),
+                  backgroundColor: const Color(0xFF3E2723),
                   foregroundColor: Colors.white,
                   elevation: 0,
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12)),
+                      borderRadius: BorderRadius.circular(14)),
+                  shadowColor: Colors.transparent,
                 ),
                 child: _isSubmitting
                     ? const SizedBox(
-                        height: 20,
-                        width: 20,
+                        height: 22,
+                        width: 22,
                         child: CircularProgressIndicator(
                           strokeWidth: 2.5,
                           valueColor:
                               AlwaysStoppedAnimation<Color>(Colors.white),
                         ),
                       )
-                    : Row(
+                    : const Row(
                         mainAxisAlignment: MainAxisAlignment.center,
-                        children: const [
+                        children: [
+                          Icon(Icons.send_rounded, size: 18),
+                          SizedBox(width: 10),
                           Text(
                             'SEND MESSAGE',
                             style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w700,
-                                letterSpacing: 0.8),
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 0.8,
+                            ),
                           ),
-                          SizedBox(width: 6),
-                          Icon(Icons.send_rounded, size: 16),
                         ],
                       ),
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 14),
 
             // Privacy Note
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.lock_outline_rounded,
-                  size: 14,
-                  color: const Color(0xFF9E9E9E),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0xFF81C784).withOpacity(0.08),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(
+                  color: const Color(0xFF81C784).withOpacity(0.2),
                 ),
-                const SizedBox(width: 6),
-                Flexible(
-                  child: Text(
-                    'We respect your privacy. Your information will only be used to respond to your inquiry.',
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      fontSize: 11,
-                      color: Color(0xFF9E9E9E),
-                      height: 1.4,
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF81C784).withOpacity(0.15),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(
+                      Icons.shield_outlined,
+                      size: 14,
+                      color: Color(0xFF81C784),
                     ),
                   ),
-                ),
-              ],
+                  const SizedBox(width: 10),
+                  const Expanded(
+                    child: Text(
+                      'Your information is secure. We never share your data with third parties.',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: Color(0xFF616161),
+                        height: 1.4,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildLabel(String text, IconData icon) {
+    return Row(
+      children: [
+        Icon(icon, size: 12, color: const Color(0xFF9E9E9E)),
+        const SizedBox(width: 6),
+        Text(
+          text,
+          style: const TextStyle(
+            fontSize: 10,
+            fontWeight: FontWeight.w600,
+            color: Color(0xFF9E9E9E),
+            letterSpacing: 0.8,
+          ),
+        ),
+      ],
+    );
+  }
+
+  InputDecoration _inputDecoration({
+    required String hintText,
+    required IconData prefixIcon,
+    TextAlign? alignPrefix,
+  }) {
+    return InputDecoration(
+      hintText: hintText,
+      hintStyle: const TextStyle(fontSize: 13, color: Color(0xFFBDBDBD)),
+      prefixIcon: Icon(prefixIcon, size: 18, color: const Color(0xFF6B5B4F)),
+      filled: true,
+      fillColor: const Color(0xFFF5F0E8),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: Color(0xFFE0D6C9)),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: Color(0xFFE0D6C9)),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: Color(0xFF6B5B4F), width: 2),
+      ),
+      errorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: Color(0xFFE57373)),
+      ),
+      focusedErrorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: Color(0xFFE57373), width: 2),
+      ),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
     );
   }
 
@@ -612,18 +712,15 @@ class _ContactScreenState extends State<ContactScreen> {
 
     setState(() => _isSubmitting = true);
 
-    // Simulasi API call
     await Future.delayed(const Duration(seconds: 2));
 
     setState(() => _isSubmitting = false);
 
-    // Clear form
     _nameController.clear();
     _emailController.clear();
     _messageController.clear();
     _selectedInquiry = 'General Inquiry';
 
-    // Show success dialog
     _showSuccessDialog();
   }
 
@@ -631,17 +728,30 @@ class _ContactScreenState extends State<ContactScreen> {
     showDialog(
       context: context,
       builder: (context) => Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        backgroundColor: Colors.white,
         child: Padding(
           padding: const EdgeInsets.all(28),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Container(
-                padding: const EdgeInsets.all(16),
+                width: 72,
+                height: 72,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF81C784),
+                  gradient: const LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [Color(0xFF81C784), Color(0xFF66BB6A)],
+                  ),
                   shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF81C784).withOpacity(0.4),
+                      blurRadius: 20,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
                 ),
                 child: const Icon(
                   Icons.check_rounded,
@@ -649,18 +759,19 @@ class _ContactScreenState extends State<ContactScreen> {
                   color: Colors.white,
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 22),
               const Text(
                 'Message Sent!',
                 style: TextStyle(
-                  fontSize: 20,
+                  fontSize: 22,
                   fontWeight: FontWeight.bold,
                   color: Color(0xFF3E2723),
+                  letterSpacing: 0.3,
                 ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 10),
               const Text(
-                'Thank you for reaching out. We\'ll get back to you within 24 hours.',
+                'Thank you for reaching out!\nWe\'ll get back to you within 24 hours.',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 13,
@@ -671,18 +782,31 @@ class _ContactScreenState extends State<ContactScreen> {
               const SizedBox(height: 24),
               SizedBox(
                 width: double.infinity,
-                height: 44,
+                height: 50,
                 child: ElevatedButton(
                   onPressed: () => Navigator.pop(context),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF6B5B4F),
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12)),
+                        borderRadius: BorderRadius.circular(14)),
                     elevation: 0,
+                    shadowColor: Colors.transparent,
                   ),
-                  child: const Text('Got it!',
-                      style: TextStyle(fontWeight: FontWeight.w600)),
+                  child: const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.check_circle_rounded, size: 18),
+                      SizedBox(width: 8),
+                      Text(
+                        'Got it!',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ],
@@ -693,7 +817,6 @@ class _ContactScreenState extends State<ContactScreen> {
   }
 
   Widget _buildBottomNavigation() {
-    // ✅ FIX: Items dengan index 0-3 yang konsisten
     final items = [
       {
         'icon': Icons.local_cafe_outlined,
@@ -716,10 +839,10 @@ class _ContactScreenState extends State<ContactScreen> {
         'label': 'Contact'
       },
       {
-        'icon': Icons.person_outline,        
-        'active': Icons.person_rounded,       
+        'icon': Icons.person_outline,
+        'active': Icons.person_rounded,
         'label': 'Profile'
-        },
+      },
     ];
 
     return Container(
@@ -728,9 +851,9 @@ class _ContactScreenState extends State<ContactScreen> {
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withOpacity(0.05),
             blurRadius: 20,
-            offset: const Offset(0, -4),
+            offset: const Offset(0, -3),
           ),
         ],
       ),
@@ -740,6 +863,7 @@ class _ContactScreenState extends State<ContactScreen> {
           final isSelected = _selectedIndex == i;
           return GestureDetector(
             onTap: () => _onTabTapped(i),
+            behavior: HitTestBehavior.opaque,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -763,16 +887,6 @@ class _ContactScreenState extends State<ContactScreen> {
                         : const Color(0xFFBDBDBD),
                   ),
                 ),
-                if (isSelected)
-                  Container(
-                    margin: const EdgeInsets.only(top: 4),
-                    width: 20,
-                    height: 2,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF6B5B4F),
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
               ],
             ),
           );
@@ -785,42 +899,79 @@ class _ContactScreenState extends State<ContactScreen> {
     showDialog(
       context: context,
       builder: (context) => Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         child: Padding(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.all(24),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text('Logout',
-                  style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF3E2723))),
-              const SizedBox(height: 8),
-              const Text('Are you sure you want to logout?',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 14, color: Color(0xFF757575))),
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF5F0E8),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.logout_rounded,
+                    size: 28, color: Color(0xFF6B5B4F)),
+              ),
               const SizedBox(height: 20),
+              const Text(
+                'Logout',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF3E2723),
+                ),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'Are you sure you want to logout?',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Color(0xFF757575),
+                  height: 1.4,
+                ),
+              ),
+              const SizedBox(height: 24),
               Row(
                 children: [
                   Expanded(
-                      child: TextButton(
-                          onPressed: () => Navigator.pop(context),
-                          child: const Text('Cancel'))),
+                    child: TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: const Text('Cancel',
+                          style: TextStyle(
+                              color: Color(0xFF6B5B4F),
+                              fontWeight: FontWeight.w600)),
+                    ),
+                  ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: ElevatedButton(
                       onPressed: () {
                         Navigator.pushAndRemoveUntil(
-                            context,
-                            MaterialPageRoute(
-                                builder: (_) => const LoginScreen()),
-                            (_) => false);
+                          context,
+                          MaterialPageRoute(
+                              builder: (_) => const LoginScreen()),
+                          (_) => false,
+                        );
                       },
                       style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFE57373),
-                          foregroundColor: Colors.white),
-                      child: const Text('Logout'),
+                        backgroundColor: const Color(0xFFE57373),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12)),
+                        elevation: 0,
+                      ),
+                      child: const Text('Logout',
+                          style: TextStyle(fontWeight: FontWeight.w600)),
                     ),
                   ),
                 ],
