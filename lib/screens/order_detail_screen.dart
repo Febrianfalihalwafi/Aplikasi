@@ -4,12 +4,14 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/order_model.dart';
+import 'menu_screen.dart';
 
 class OrderDetailScreen extends StatefulWidget {
   final Order order;
 
   const OrderDetailScreen({Key? key, required this.order}) : super(key: key);
 
+  @override
   @override
   State<OrderDetailScreen> createState() => _OrderDetailScreenState();
 }
@@ -22,6 +24,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen>
   late Order _currentOrder;
   Timer? _pollingTimer;
 
+  @override
   @override
   void initState() {
     super.initState();
@@ -46,7 +49,9 @@ class _OrderDetailScreenState extends State<OrderDetailScreen>
 
   Future<void> _fetchOrderStatus() async {
     if (_currentOrder.status == 'Completed' ||
-        _currentOrder.status == 'Cancelled') return;
+        _currentOrder.status == 'Cancelled') {
+      return;
+    }
 
     if (_currentOrder.id.startsWith('CT-')) return;
 
@@ -71,6 +76,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen>
   }
 
   @override
+  @override
   void dispose() {
     _pollingTimer?.cancel();
     _animationController.dispose();
@@ -82,6 +88,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen>
     return Color(int.parse(hex, radix: 16));
   }
 
+  @override
   @override
   Widget build(BuildContext context) {
     final order = _currentOrder;
@@ -399,15 +406,15 @@ class _OrderDetailScreenState extends State<OrderDetailScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
+          const Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text('Order Status',
+              Text('Order Status',
                   style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
                       color: Color(0xFF3E2723))),
-              const Row(
+              Row(
                 children: [
                   SizedBox(
                     width: 8,
@@ -515,8 +522,14 @@ class _OrderDetailScreenState extends State<OrderDetailScreen>
             width: double.infinity,
             height: 52,
             child: ElevatedButton.icon(
-              onPressed: () =>
-                  Navigator.popUntil(context, (route) => route.isFirst),
+              onPressed: () {
+                // Navigasi ke MenuScreen dan hapus halaman sebelumnya
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(builder: (context) => const MenuScreen()),
+                  (route) => false,
+                );
+              },
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF6B5B4F),
                 foregroundColor: Colors.white,
@@ -782,9 +795,9 @@ class _OrderDetailScreenState extends State<OrderDetailScreen>
                         elevation: 0,
                         shadowColor: Colors.transparent,
                       ),
-                      child: Row(
+                      child: const Row(
                         mainAxisAlignment: MainAxisAlignment.center,
-                        children: const [
+                        children: [
                           Icon(Icons.send_rounded, size: 18),
                           SizedBox(width: 8),
                           Text(

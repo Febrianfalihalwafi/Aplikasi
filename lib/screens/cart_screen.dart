@@ -17,12 +17,14 @@ class CartScreen extends StatefulWidget {
   }) : super(key: key);
 
   @override
+  @override
   State<CartScreen> createState() => _CartScreenState();
 }
 
 class _CartScreenState extends State<CartScreen> {
   int _selectedIndex = 1;
 
+  @override
   @override
   void initState() {
     super.initState();
@@ -84,6 +86,7 @@ class _CartScreenState extends State<CartScreen> {
     }
   }
 
+  @override
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
@@ -467,10 +470,10 @@ class _CartScreenState extends State<CartScreen> {
                         ),
                       ],
               ),
-              child: Center(
+              child: const Center(
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
-                  children: const [
+                  children: [
                     Text('Proceed to Checkout',
                         style: TextStyle(
                             fontSize: 15,
@@ -486,11 +489,10 @@ class _CartScreenState extends State<CartScreen> {
             ),
           ),
           const SizedBox(height: 12),
-          Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-            const Icon(Icons.shield_outlined,
-                size: 14, color: Color(0xFF81C784)),
-            const SizedBox(width: 6),
-            const Text('Secure payment • Free cancellation',
+          const Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+            Icon(Icons.shield_outlined, size: 14, color: Color(0xFF81C784)),
+            SizedBox(width: 6),
+            Text('Secure payment • Free cancellation',
                 style: TextStyle(
                     fontSize: 11,
                     color: Color(0xFF9E9E9E),

@@ -13,6 +13,7 @@ class ProfileScreen extends StatefulWidget {
   const ProfileScreen({Key? key, this.initialIndex = 4}) : super(key: key);
 
   @override
+  @override
   State<ProfileScreen> createState() => _ProfileScreenState();
 }
 
@@ -38,16 +39,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final _oldPasswordController = TextEditingController();
   final _newPasswordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
-  bool _obscureOld = true;
-  bool _obscureNew = true;
-  bool _obscureConfirm = true;
 
+  @override
   @override
   void initState() {
     super.initState();
     _loadProfile();
   }
 
+  @override
   @override
   void dispose() {
     _nameController.dispose();
@@ -58,7 +58,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     _confirmPasswordController.dispose();
     super.dispose();
   }
-  
+
   void _showImagePickerOptions() {
     showModalBottomSheet(
       context: context,
@@ -89,18 +89,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               title: const Text('Kamera'),
               onTap: () async {
-  Navigator.pop(context);
+                Navigator.pop(context);
 
-  final picked = await ImagePicker()
-      .pickImage(
-        source: ImageSource.camera,
-        imageQuality: 70,
-      );
+                final picked = await ImagePicker().pickImage(
+                  source: ImageSource.camera,
+                  imageQuality: 70,
+                );
 
-  if (picked != null) {
-    setState(() => _pickedImage = File(picked.path));
-  }
-},
+                if (picked != null) {
+                  setState(() => _pickedImage = File(picked.path));
+                }
+              },
             ),
             ListTile(
               leading: Container(
@@ -113,18 +112,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               title: const Text('Galeri'),
               onTap: () async {
-  Navigator.pop(context);
+                Navigator.pop(context);
 
-  final picked = await ImagePicker()
-      .pickImage(
-        source: ImageSource.gallery,
-        imageQuality: 70,
-      );
+                final picked = await ImagePicker().pickImage(
+                  source: ImageSource.gallery,
+                  imageQuality: 70,
+                );
 
-  if (picked != null) {
-    setState(() => _pickedImage = File(picked.path));
-  }
-},
+                if (picked != null) {
+                  setState(() => _pickedImage = File(picked.path));
+                }
+              },
             ),
             const SizedBox(height: 8),
           ],
@@ -135,7 +133,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   // ─── Load profile from backend ───────────────────────────────────
   Future<void> _loadProfile() async {
-  
     setState(() => _isLoading = true);
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -183,7 +180,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   // ─── Save profile edits ──────────────────────────────────────────
   Future<void> _saveProfile() async {
-
     if (_nameController.text.trim().isEmpty) {
       _showSnack('Nama tidak boleh kosong', isError: true);
       return;
@@ -227,13 +223,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
         // ✅ Update state langsung dari response, TANPA _loadProfile()
         // agar tidak ada loading spinner yang reset UI
         if (!mounted) return;
-        
+
         setState(() {
           // Hanya update name dan phone, JANGAN sentuh avatar sama sekali
           _userData?['name'] = data['user']['name'] ?? nameToSave;
           _userData?['phone'] = data['user']['phone'] ?? phoneToSave;
           _nameController.text = data['user']['name'] ?? nameToSave;
-          _emailController.text = data['user']['email'] ?? _emailController.text;
+          _emailController.text =
+              data['user']['email'] ?? _emailController.text;
           _phoneController.text = data['user']['phone'] ?? phoneToSave;
           _isEditing = false;
           _isSaving = false;
@@ -366,6 +363,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   // ─── UI ──────────────────────────────────────────────────────────
   @override
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFFAF8F3),
@@ -489,7 +487,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     : avatar,
                                 key: ValueKey('$avatar$_avatarCacheBuster'),
                                 fit: BoxFit.cover,
-                                errorBuilder: (_, __, ___) => _avatarFallback(name),
+                                errorBuilder: (_, __, ___) =>
+                                    _avatarFallback(name),
                               )
                             : _avatarFallback(name),
               ),
@@ -531,8 +530,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
         const SizedBox(height: 8),
         Container(
-          padding:
-              const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
           decoration: BoxDecoration(
             color: role == 'admin'
                 ? const Color(0xFF3E2723)
@@ -544,9 +542,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w600,
-              color: role == 'admin'
-                  ? Colors.white
-                  : const Color(0xFF6B5B4F),
+              color: role == 'admin' ? Colors.white : const Color(0xFF6B5B4F),
             ),
           ),
         ),
@@ -717,21 +713,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
           const Divider(height: 1, indent: 60, color: Color(0xFFF5F0E8)),
           _buildActionItem(
-  icon: Icons.help_outline_rounded,
-  label: 'Bantuan',
-  onTap: () => _showInfoDialog(
-    'Bantuan',
-    'Untuk bantuan lebih lanjut, hubungi kami di:\n\nEmail: hello@coffeetelkom.id\nInstagram: @coffeetelkom\n\nJam operasional: 08.00 – 20.00 WIB',
-  ),
-),
-_buildActionItem(
-  icon: Icons.privacy_tip_rounded,
-  label: 'Kebijakan Privasi',
-  onTap: () => _showInfoDialog(
-    'Kebijakan Privasi',
-    'Kami menjaga kerahasiaan data pribadi Anda. Informasi yang dikumpulkan hanya digunakan untuk keperluan layanan Coffee Telkom dan tidak akan dibagikan kepada pihak ketiga tanpa persetujuan Anda.',
-  ),
-),
+            icon: Icons.help_outline_rounded,
+            label: 'Bantuan',
+            onTap: () => _showInfoDialog(
+              'Bantuan',
+              'Untuk bantuan lebih lanjut, hubungi kami di:\n\nEmail: hello@coffeetelkom.id\nInstagram: @coffeetelkom\n\nJam operasional: 08.00 – 20.00 WIB',
+            ),
+          ),
+          _buildActionItem(
+            icon: Icons.privacy_tip_rounded,
+            label: 'Kebijakan Privasi',
+            onTap: () => _showInfoDialog(
+              'Kebijakan Privasi',
+              'Kami menjaga kerahasiaan data pribadi Anda. Informasi yang dikumpulkan hanya digunakan untuk keperluan layanan Coffee Telkom dan tidak akan dibagikan kepada pihak ketiga tanpa persetujuan Anda.',
+            ),
+          ),
         ],
       ),
     );
@@ -757,8 +753,8 @@ _buildActionItem(
                 color: color?.withOpacity(0.1) ?? const Color(0xFFF5F0E8),
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: Icon(icon,
-                  size: 18, color: color ?? const Color(0xFF6B5B4F)),
+              child:
+                  Icon(icon, size: 18, color: color ?? const Color(0xFF6B5B4F)),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -793,8 +789,7 @@ _buildActionItem(
           padding: const EdgeInsets.symmetric(vertical: 14),
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-          textStyle: const TextStyle(
-              fontSize: 15, fontWeight: FontWeight.w600),
+          textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
         ),
       ),
     );
@@ -822,7 +817,7 @@ _buildActionItem(
     );
   }
 
-   void _showInfoDialog(String title, String content) {
+  void _showInfoDialog(String title, String content) {
     showDialog(
       context: context,
       builder: (_) => Dialog(
@@ -980,17 +975,15 @@ _buildActionItem(
           Icon(
             isSelected ? activeIcon : icon,
             size: 22,
-            color: isSelected
-                ? const Color(0xFF6B5B4F)
-                : const Color(0xFFBDBDBD),
+            color:
+                isSelected ? const Color(0xFF6B5B4F) : const Color(0xFFBDBDBD),
           ),
           const SizedBox(height: 4),
           Text(
             label,
             style: TextStyle(
               fontSize: 10,
-              fontWeight:
-                  isSelected ? FontWeight.w600 : FontWeight.w400,
+              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
               color: isSelected
                   ? const Color(0xFF6B5B4F)
                   : const Color(0xFFBDBDBD),
@@ -1006,6 +999,7 @@ _buildActionItem(
     Navigator.pop(context); // pop back, then menu_screen handles routing
   }
 }
+
 // ─── Widget terpisah untuk bottom sheet ganti password ───────────
 class _ChangePasswordSheet extends StatefulWidget {
   final String? token;
@@ -1020,6 +1014,7 @@ class _ChangePasswordSheet extends StatefulWidget {
     required this.onError,
   });
 
+  @override
   @override
   State<_ChangePasswordSheet> createState() => _ChangePasswordSheetState();
 }
@@ -1036,6 +1031,7 @@ class _ChangePasswordSheetState extends State<_ChangePasswordSheet> {
   String? _errorMsg;
 
   @override
+  @override
   void dispose() {
     _oldCtrl.dispose();
     _newCtrl.dispose();
@@ -1044,7 +1040,9 @@ class _ChangePasswordSheetState extends State<_ChangePasswordSheet> {
   }
 
   Future<void> _submit() async {
-    if (_oldCtrl.text.isEmpty || _newCtrl.text.isEmpty || _confirmCtrl.text.isEmpty) {
+    if (_oldCtrl.text.isEmpty ||
+        _newCtrl.text.isEmpty ||
+        _confirmCtrl.text.isEmpty) {
       setState(() => _errorMsg = 'Semua field harus diisi');
       return;
     }
@@ -1057,11 +1055,15 @@ class _ChangePasswordSheetState extends State<_ChangePasswordSheet> {
       return;
     }
     if (_oldCtrl.text == _newCtrl.text) {
-      setState(() => _errorMsg = 'Password baru tidak boleh sama dengan password lama');
+      setState(() =>
+          _errorMsg = 'Password baru tidak boleh sama dengan password lama');
       return;
     }
 
-    setState(() { _isSaving = true; _errorMsg = null; });
+    setState(() {
+      _isSaving = true;
+      _errorMsg = null;
+    });
 
     try {
       final res = await http.put(
@@ -1089,9 +1091,11 @@ class _ChangePasswordSheetState extends State<_ChangePasswordSheet> {
   }
 
   @override
+  @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+      padding:
+          EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
       child: Container(
         decoration: const BoxDecoration(
           color: Colors.white,
@@ -1105,7 +1109,10 @@ class _ChangePasswordSheetState extends State<_ChangePasswordSheet> {
             Row(
               children: [
                 const Text('Ganti Password',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF3E2723))),
+                    style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF3E2723))),
                 const Spacer(),
                 IconButton(
                   icon: const Icon(Icons.close),
@@ -1121,12 +1128,16 @@ class _ChangePasswordSheetState extends State<_ChangePasswordSheet> {
             _buildField('Password Baru', _newCtrl, _obscureNew,
                 () => setState(() => _obscureNew = !_obscureNew)),
             const SizedBox(height: 12),
-            _buildField('Konfirmasi Password Baru', _confirmCtrl, _obscureConfirm,
+            _buildField(
+                'Konfirmasi Password Baru',
+                _confirmCtrl,
+                _obscureConfirm,
                 () => setState(() => _obscureConfirm = !_obscureConfirm)),
             if (_errorMsg != null) ...[
               const SizedBox(height: 12),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                 decoration: BoxDecoration(
                   color: Colors.red[50],
                   borderRadius: BorderRadius.circular(10),
@@ -1138,7 +1149,8 @@ class _ChangePasswordSheetState extends State<_ChangePasswordSheet> {
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(_errorMsg!,
-                          style: TextStyle(color: Colors.red[700], fontSize: 13)),
+                          style:
+                              TextStyle(color: Colors.red[700], fontSize: 13)),
                     ),
                   ],
                 ),
@@ -1153,14 +1165,18 @@ class _ChangePasswordSheetState extends State<_ChangePasswordSheet> {
                   backgroundColor: const Color(0xFF6B5B4F),
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14)),
                 ),
                 child: _isSaving
                     ? const SizedBox(
-                        height: 20, width: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                            strokeWidth: 2, color: Colors.white))
                     : const Text('Simpan Password',
-                        style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+                        style: TextStyle(
+                            fontSize: 15, fontWeight: FontWeight.bold)),
               ),
             ),
             const SizedBox(height: 8),
@@ -1170,11 +1186,14 @@ class _ChangePasswordSheetState extends State<_ChangePasswordSheet> {
     );
   }
 
-  Widget _buildField(String label, TextEditingController ctrl, bool obscure, VoidCallback toggle) {
+  Widget _buildField(String label, TextEditingController ctrl, bool obscure,
+      VoidCallback toggle) {
     return TextField(
       controller: ctrl,
       obscureText: obscure,
-      onChanged: (_) { if (_errorMsg != null) setState(() => _errorMsg = null); },
+      onChanged: (_) {
+        if (_errorMsg != null) setState(() => _errorMsg = null);
+      },
       style: const TextStyle(fontSize: 14, color: Color(0xFF3E2723)),
       decoration: InputDecoration(
         labelText: label,
@@ -1182,11 +1201,13 @@ class _ChangePasswordSheetState extends State<_ChangePasswordSheet> {
         filled: true,
         fillColor: const Color(0xFFF5F0E8),
         border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide.none),
         suffixIcon: IconButton(
           icon: Icon(
             obscure ? Icons.visibility_off_rounded : Icons.visibility_rounded,
-            size: 20, color: const Color(0xFF9E9E9E),
+            size: 20,
+            color: const Color(0xFF9E9E9E),
           ),
           onPressed: toggle,
         ),
